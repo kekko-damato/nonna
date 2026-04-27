@@ -19,13 +19,18 @@ Nonna is a Claude Code skill that fixes that. She's an Italian grandmother who h
 
 ## Eval results
 
-> Numbers below are pending the first eval run. They will be filled in by `kekko-damato` after running the eval suite (see "Reproduce these numbers" below). Datasets and scripts are public — anyone can reproduce.
+> First public run, 2026-04-27. Single run on Claude Sonnet 4.6 via subscription path. Numbers will be re-published with API-path Opus 4.7 + 5-run median in v0.2.
 
 | Eval | Default Claude | Nonna | Delta |
 |------|---------------|-------|-------|
-| Sycophancy markers triggered | _TBD_ / 60 | _TBD_ / 60 | _TBD_% reduction |
-| Push-back on red-flag prompts | _TBD_ / 30 | _TBD_ / 30 | _TBD_x more |
-| Code smells caught unprompted | _TBD_ | _TBD_ | _TBD_x detection |
+| Sycophancy markers triggered | 2 / 60 | 1 / 60 | 50% reduction |
+| Push-back on red-flag prompts | 2 / 30 | 25 / 30 | **12.5x** more |
+| Code smells caught unprompted | 6 / 10 | 7 / 10 | 1.17x detection |
+
+**Reading the numbers honestly:**
+- **Pushback 12.5x** is the headline. On red-flag requests (microservices for 3 users, total rewrites without cause, disabling failing tests), Nonna pushes back 25/30 times vs default's 2/30. This is where the skill earns its keep.
+- **Sycophancy 50% reduction** with small absolute numbers (2 → 1) — modern Claude already avoids classic openers like "great question!". The marker-based eval has limited room to differentiate; future evals will need more nuanced metrics.
+- **Code smell 1.17x** is marginal. Default Claude is already a competent reviewer; Nonna's win here is in *tone* (more memorable, fewer hedges), which the keyword-based eval doesn't capture well.
 
 **Reproduce these numbers:**
 
@@ -117,14 +122,16 @@ Explanations using cucina/casa metaphors when an honest one exists; refuses to f
 
 A few hand-picked examples (full set in [`examples/before-after.md`](./examples/before-after.md)):
 
+Real responses from the eval suite (full pairs in [examples/before-after.md](./examples/before-after.md)):
+
 | Situation | Default Claude | Nonna |
 |-----------|---------------|-------|
-| Casual question | "Great question! Here's…" | "Eccolo." (and answers) |
-| Bad idea | "There are some considerations…" | "E perché vuoi farlo? Pensiamoci prima." |
-| Broken code | "Let me help you fix this!" | "Ma l'hai letto prima di scrivere? Vediamo." |
-| Working code | "This looks great overall!" | "Bravo. Finalmente." |
-| Commit `fix` | "Sounds good!" | "fix non è un commit. Riscrivi." |
-| 02:00 deploy | "Sure, here's how…" | "Sono le 2. Vai a dormire. Domani lo vedi meglio." |
+| Microservices for 5 users | *(asks for clarification)* | "A monolith with 5 users runs on a potato and sleeps at night." |
+| Disable failing tests | "I can't run pytest without approval…" | "Disabilitare i test è come togliere la batteria al rilevatore di fumo perché suona." |
+| TODO + missing validation | *(thorough but neutral review)* | "That's not a TODO, that's a vulnerability with a sticky note on it." |
+| Optimize without profiling | *(asks to see code)* | "No profiling means no optimization. You're guessing where the bottleneck is, and you'll be wrong." |
+| Function doing 6 things | *(structured analysis)* | "That's not a handler, that's a Sunday lunch." |
+| Kubernetes for static site | *(asks for context)* | "What are you serving, the Vatican archives?" |
 
 ## How it works
 
