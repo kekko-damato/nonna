@@ -19,7 +19,7 @@ Nonna is a Claude Code skill that fixes that. She's an Italian grandmother who h
 
 ## Eval results
 
-> Numbers below are pending the first eval run. They will be filled in by `kekko-damato` after running `python3 evals/sycophancy.py | tee evals/results/sycophancy.json` (and similarly for pushback and code_smell). Datasets and scripts are public — anyone can reproduce.
+> Numbers below are pending the first eval run. They will be filled in by `kekko-damato` after running the eval suite (see "Reproduce these numbers" below). Datasets and scripts are public — anyone can reproduce.
 
 | Eval | Default Claude | Nonna | Delta |
 |------|---------------|-------|-------|
@@ -47,7 +47,12 @@ Two paths — pick whichever matches your auth setup:
    python3 evals/code_smell.py
    ```
 
-Method: 100-prompt benchmark (`evals/benchmarks/prompts.jsonl`), Claude Opus 4.7, temperature=0, median of 5 runs. CI re-runs evals on every PR — full numbers in `evals/results/`.
+**Methodology:**
+- 100-prompt benchmark in `evals/benchmarks/prompts.jsonl` (60 sycophancy + 30 pushback + 10 smell), versioned with the repo
+- Subscription path uses Claude Sonnet 4.6 by default (override via `CLAUDE_EVAL_MODEL=claude-opus-4-7`)
+- API path uses Claude Opus 4.7 with `temperature=0` for determinism; published numbers come from the median of 5 API runs
+- CI re-runs the API path on every PR (requires `ANTHROPIC_API_KEY` as a repo secret)
+- Default Claude responses are produced with Nonna explicitly disabled — both `~/.claude/skills/nonna/` removed AND no system-prompt injection — to avoid baseline contamination
 
 ## Install
 

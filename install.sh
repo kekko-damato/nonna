@@ -41,6 +41,10 @@ cp -r "${NONNA_REPO_DIR}/hooks" "$SKILL_TARGET/"
 cp -r "${NONNA_REPO_DIR}/scripts" "$SKILL_TARGET/"
 chmod +x "${SKILL_TARGET}/hooks/"*.sh
 
+# Strip Python cache artifacts that may have leaked in from local dev
+find "$SKILL_TARGET" -type d \( -name "__pycache__" -o -name ".pytest_cache" \) -exec rm -rf {} + 2>/dev/null || true
+find "$SKILL_TARGET" -type f -name "*.pyc" -delete 2>/dev/null || true
+
 # 4. Symlink commands (with conflict check)
 echo "→ Linking commands..."
 for cmd_file in "${NONNA_REPO_DIR}/commands/"*.md; do
