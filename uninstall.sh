@@ -29,6 +29,7 @@ done
 
 # 3. Restore settings.json from latest backup, OR remove only Nonna entries
 if [ -f "$SETTINGS_FILE" ]; then
+    # shellcheck disable=SC2012  # backup filenames are timestamp-only, no special chars — ls is safe here
     LATEST_BACKUP="$(ls -1t "${SETTINGS_FILE}.bak."* 2>/dev/null | head -1 || echo '')"
     if [ -n "$LATEST_BACKUP" ]; then
         echo "→ Restoring settings.json from ${LATEST_BACKUP}..."
