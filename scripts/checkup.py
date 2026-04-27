@@ -14,6 +14,14 @@ from typing import Any
 import time
 
 TODO_MARKERS = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b", re.IGNORECASE)
+FAT_THRESHOLD = 500
+OBESE_THRESHOLD = 1000
+ORPHAN_LOG_PATTERNS = re.compile(
+    r"\b(console\.log|print|fmt\.Println|dbg!|System\.out\.println|println!)\b"
+)
+TEST_FILE_PATTERNS = re.compile(
+    r"(\.test\.|\.spec\.|_test\.|test_|/tests?/|/__tests__/|_spec\.)"
+)
 SCAN_EXTENSIONS = {
     ".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs", ".java",
     ".rb", ".php", ".c", ".cpp", ".h", ".hpp", ".cs", ".swift",
@@ -70,15 +78,47 @@ def scan_todos(root: Path) -> dict[str, Any]:
 
 
 def scan_fat_files(root: Path) -> list[dict[str, Any]]:
-    return []  # placeholder
+    """Files between FAT_THRESHOLD and OBESE_THRESHOLD lines."""
+    results = []
+    for f in iter_source_files(root):
+        try:
+            lines = sum(1 for _ in f.open(errors="ignore"))
+            if FAT_THRESHOLD <= lines < OBESE_THRESHOLD:
+                results.append({"file": str(f.relative_to(root)), "lines": lines})
+        except (PermissionError, OSError):
+            continue
+    results.sort(key=lambda x: -x["lines"])
+    return results[:5]
 
 
 def scan_obese_files(root: Path) -> list[dict[str, Any]]:
-    return []  # placeholder
+    """Files exceeding OBESE_THRESHOLD lines (red flag)."""
+    results = []
+    for f in iter_source_files(root):
+        try:
+            lines = sum(1 for _ in f.open(errors="ignore"))
+            if lines >= OBESE_THRESHOLD:
+                results.append({"file": str(f.relative_to(root)), "lines": lines})
+        except (PermissionError, OSError):
+            continue
+    results.sort(key=lambda x: -x["lines"])
+    return results
 
 
 def scan_orphan_logs(root: Path) -> int:
-    return 0  # placeholder
+    """Count debug-print orphans in non-test source files."""
+    count = 0
+    for f in iter_source_files(root):
+        path_str = str(f.relative_to(root)).replace(os.sep, "/")
+        if TEST_FILE_PATTERNS.search(path_str):
+            continue
+        try:
+            for line in f.read_text(errors="ignore").splitlines():
+                if ORPHAN_LOG_PATTERNS.search(line):
+                    count += 1
+        except (PermissionError, OSError):
+            continue
+    return count
 
 
 def scan_stale_deps(root: Path) -> dict[str, Any]:

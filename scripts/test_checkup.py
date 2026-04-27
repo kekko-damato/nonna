@@ -50,3 +50,40 @@ def test_todo_oldest_3(tmp_path):
         assert "file" in first
         assert "line" in first
         assert "marker" in first
+
+
+def test_detects_fat_file(tmp_path):
+    big = tmp_path / "big.py"
+    big.write_text("x = 1\n" * 600)
+    result = run_checkup(str(tmp_path))
+    assert any(f["file"] == "big.py" for f in result["fat_files"])
+    fat_entry = next(f for f in result["fat_files"] if f["file"] == "big.py")
+    assert fat_entry["lines"] == 600
+
+
+def test_detects_obese_file(tmp_path):
+    huge = tmp_path / "huge.py"
+    huge.write_text("x = 1\n" * 1200)
+    result = run_checkup(str(tmp_path))
+    assert any(f["file"] == "huge.py" for f in result["obese_files"])
+
+
+def test_normal_file_not_fat(tmp_path):
+    normal = tmp_path / "normal.py"
+    normal.write_text("x = 1\n" * 100)
+    result = run_checkup(str(tmp_path))
+    assert not any(f["file"] == "normal.py" for f in result["fat_files"])
+
+
+def test_counts_orphan_logs(tmp_path):
+    src = tmp_path / "code.js"
+    src.write_text("function f() {\n  console.log('debug')\n  return 42\n}\n")
+    result = run_checkup(str(tmp_path))
+    assert result["orphan_logs"] == 1
+
+
+def test_skips_logs_in_test_files(tmp_path):
+    test = tmp_path / "thing.test.js"
+    test.write_text("console.log('test debug')\n")
+    result = run_checkup(str(tmp_path))
+    assert result["orphan_logs"] == 0
