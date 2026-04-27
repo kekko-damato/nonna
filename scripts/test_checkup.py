@@ -115,3 +115,19 @@ def test_counts_bad_commits(tmp_path):
     subprocess.run(["git", "commit", "-m", "feat: add proper feature"], cwd=tmp_path, check=True, capture_output=True)
     result = run_checkup(str(tmp_path))
     assert result["bad_commits_30d"] == 2
+
+
+def test_test_ratio_calculated(tmp_path):
+    (tmp_path / "src").mkdir()
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "src" / "code.py").write_text("x = 1\n" * 100)
+    (tmp_path / "tests" / "test_code.py").write_text("y = 1\n" * 20)
+    result = run_checkup(str(tmp_path))
+    # 20 test lines / 120 total lines ≈ 0.166
+    assert 0.1 < result["test_ratio"] < 0.2
+
+
+def test_no_tests_zero_ratio(tmp_path):
+    (tmp_path / "src.py").write_text("x = 1\n" * 50)
+    result = run_checkup(str(tmp_path))
+    assert result["test_ratio"] == 0.0

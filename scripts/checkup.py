@@ -143,7 +143,86 @@ def scan_orphan_logs(root: Path) -> int:
 
 
 def scan_stale_deps(root: Path) -> dict[str, Any]:
-    return {"count": 0, "with_cve": 0, "list": []}  # placeholder
+    """Best-effort stale deps detection. Returns 0/empty if tools missing."""
+    result = {"count": 0, "with_cve": 0, "list": []}
+
+    # npm outdated
+    if (root / "package.json").exists():
+        try:
+            r = subprocess.run(
+                ["npm", "outdated", "--json"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            # npm outdated exits non-zero when packages are outdated, that's normal
+            if r.stdout.strip():
+                try:
+                    outdated = json.loads(r.stdout)
+                    result["count"] += len(outdated)
+                    for name, info in outdated.items():
+                        result["list"].append({
+                            "name": name,
+                            "current": info.get("current"),
+                            "wanted": info.get("wanted"),
+                            "latest": info.get("latest"),
+                            "manager": "npm",
+                        })
+                except json.JSONDecodeError:
+                    pass
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+
+    # pip outdated
+    if (root / "requirements.txt").exists() or (root / "pyproject.toml").exists():
+        try:
+            r = subprocess.run(
+                ["pip", "list", "--outdated", "--format=json"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if r.returncode == 0:
+                try:
+                    outdated = json.loads(r.stdout)
+                    result["count"] += len(outdated)
+                    for pkg in outdated:
+                        result["list"].append({
+                            "name": pkg.get("name"),
+                            "current": pkg.get("version"),
+                            "latest": pkg.get("latest_version"),
+                            "manager": "pip",
+                        })
+                except json.JSONDecodeError:
+                    pass
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+
+    # CVE detection: best-effort, only if `npm audit --json` available
+    if (root / "package.json").exists():
+        try:
+            r = subprocess.run(
+                ["npm", "audit", "--json"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            try:
+                audit = json.loads(r.stdout)
+                vulns = audit.get("metadata", {}).get("vulnerabilities", {})
+                result["with_cve"] = (
+                    vulns.get("critical", 0)
+                    + vulns.get("high", 0)
+                    + vulns.get("moderate", 0)
+                )
+            except json.JSONDecodeError:
+                pass
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+
+    return result
 
 
 def scan_zombie_branches(root: Path) -> int:
@@ -204,8 +283,32 @@ def scan_bad_commits(root: Path) -> int:
         return 0
 
 
+def is_test_file(path: Path, root: Path | None = None) -> bool:
+    if root is not None:
+        try:
+            s = str(path.relative_to(root)).replace(os.sep, "/")
+        except ValueError:
+            s = str(path).replace(os.sep, "/")
+    else:
+        s = str(path).replace(os.sep, "/")
+    return bool(TEST_FILE_PATTERNS.search(s))
+
+
 def scan_test_ratio(root: Path) -> float:
-    return 0.0  # placeholder
+    """Ratio of test LOC to total LOC. 0.0 if no source detected."""
+    test_lines = 0
+    total_lines = 0
+    for f in iter_source_files(root):
+        try:
+            lines = sum(1 for _ in f.open(errors="ignore"))
+            total_lines += lines
+            if is_test_file(f, root):
+                test_lines += lines
+        except (PermissionError, OSError):
+            continue
+    if total_lines == 0:
+        return 0.0
+    return round(test_lines / total_lines, 3)
 
 
 def scan_repo(root: Path) -> dict[str, Any]:
