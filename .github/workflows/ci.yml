@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-checkup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run checkup tests
+        run: pytest scripts/test_checkup.py -v
+
+  lint-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint hooks
+        run: shellcheck hooks/*.sh install.sh uninstall.sh
+
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate plugin.json
+        run: python3 -c "import json; json.load(open('plugin.json'))"
+      - name: Validate prompts.jsonl
+        run: |
+          python3 -c "
+          import json
+          with open('evals/benchmarks/prompts.jsonl') as f:
+              for line in f:
+                  if line.strip():
+                      json.loads(line)
+          print('OK')
+          "
+
+  evals:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [test-checkup, lint-shell, validate-json]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install anthropic
+      - name: Run evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python3 evals/sycophancy.py | tee sycophancy-result.json
+          python3 evals/pushback.py | tee pushback-result.json
+          python3 evals/code_smell.py | tee code_smell-result.json
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: "*-result.json"
