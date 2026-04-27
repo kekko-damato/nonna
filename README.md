@@ -61,24 +61,24 @@ Two paths — pick whichever matches your auth setup:
 
 ## Install
 
+**Recommended — via Claude Code plugin manager:**
+
+```bash
+claude plugin marketplace add github:kekko-damato/nonna
+claude plugin install nonna@nonna
+```
+
+Restart Claude Code. Nonna is active. Uninstall with `claude plugin uninstall nonna`.
+
+**Alternative — manual install (no plugin manager):**
+
 ```bash
 git clone https://github.com/kekko-damato/nonna
 cd nonna
 ./install.sh
 ```
 
-The installer:
-- Copies skill files to `~/.claude/skills/nonna/`
-- Backs up `~/.claude/settings.json` before merging hook configuration
-- Symlinks slash commands into `~/.claude/commands/`
-
-Restart Claude Code. Nonna will be active by default.
-
-To uninstall: `./uninstall.sh`. To install via the official Claude Code marketplace once submitted: `claude plugin install kekko-damato/nonna`.
-
-## Demo
-
-> Demo video shipping in v0.2. Meanwhile, see [`examples/before-after.md`](./examples/before-after.md) for hand-picked side-by-side responses (default Claude vs Nonna) on the same prompts.
+The manual installer copies files to `~/.claude/skills/nonna/`, backs up `~/.claude/settings.json`, registers hooks, and symlinks slash commands. Uninstall with `./uninstall.sh` (restores the backup).
 
 ## What Nonna does
 

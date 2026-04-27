@@ -1,0 +1,14 @@
+{
+  "name": "nonna",
+  "description": "Italian grandma who tells you the truth because she loves you. Kills sycophancy, pushes back on bad ideas, cares about long-term code health.",
+  "version": "0.1.0",
+  "author": {
+    "name": "kekko-damato"
+  },
+  "homepage": "https://github.com/kekko-damato/nonna",
+  "repository": "https://github.com/kekko-damato/nonna",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skill", "italian", "ai-tools", "cli"],
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks.json"
+}

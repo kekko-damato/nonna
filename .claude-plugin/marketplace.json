@@ -1,0 +1,26 @@
+{
+  "name": "nonna",
+  "owner": {
+    "name": "Raffaele Francesco \"Kekko\" D'Amato",
+    "github": "kekko-damato"
+  },
+  "metadata": {
+    "description": "Italian grandma who tells you the truth because she loves you. Kills sycophancy, pushes back on bad ideas, cares about long-term code health."
+  },
+  "plugins": [
+    {
+      "name": "nonna",
+      "source": {
+        "source": "github",
+        "repo": "kekko-damato/nonna"
+      },
+      "description": "Italian grandma who tells you the truth because she loves you. Kills sycophancy, pushes back on bad ideas, cares about long-term code health.",
+      "author": {
+        "name": "kekko-damato"
+      },
+      "category": "ai-assistant",
+      "homepage": "https://github.com/kekko-damato/nonna",
+      "license": "MIT"
+    }
+  ]
+}
