@@ -25,6 +25,26 @@ Nonna is a Claude Code skill that fixes that. She's an Italian grandmother who h
 | Push-back on red-flag prompts | _TBD_ / 30 | _TBD_ / 30 | _TBD_x more |
 | Code smells caught unprompted | _TBD_ | _TBD_ | _TBD_x detection |
 
+**Reproduce these numbers:**
+
+Two paths — pick whichever matches your auth setup:
+
+1. **Subscription (Claude Pro/Max via Claude Code)** — uses your subscription quota:
+   ```bash
+   bash evals/run_subscription.sh   # ~30-60 min, fills evals/manual-results/
+   python3 evals/sycophancy.py --from-dir evals/manual-results
+   python3 evals/pushback.py --from-dir evals/manual-results
+   python3 evals/code_smell.py --from-dir evals/manual-results
+   ```
+
+2. **API key (programmatic, exact methodology)** — uses Anthropic API:
+   ```bash
+   export ANTHROPIC_API_KEY=sk-ant-...
+   python3 evals/sycophancy.py
+   python3 evals/pushback.py
+   python3 evals/code_smell.py
+   ```
+
 Method: 100-prompt benchmark (`evals/benchmarks/prompts.jsonl`), Claude Opus 4.7, temperature=0, median of 5 runs. CI re-runs evals on every PR — full numbers in `evals/results/`.
 
 ## Install
