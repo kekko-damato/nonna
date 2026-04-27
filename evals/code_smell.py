@@ -4,22 +4,24 @@ Compares default Claude vs Nonna on 10 synthetic PRs with embedded smells.
 Heuristic: response is "caught" if it mentions key smells from expected_behavior.
 Reports detection multiplier.
 
-Usage:
+Usage (API key):
     pip install anthropic
     export ANTHROPIC_API_KEY=sk-ant-...
     python3 evals/code_smell.py
 
+Usage (subscription, after running run_subscription.sh):
+    python3 evals/code_smell.py --from-dir evals/manual-results
+
 Cost note: ~20 API calls (10 prompts × 2 conditions). Roughly $1-2 per run on Opus.
 """
 
+import argparse
 import json
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Any
-
-from anthropic import Anthropic
 
 
 # Common smell keywords. If response mentions these, the smell is "caught".
@@ -71,7 +73,7 @@ def get_api_key() -> str:
     )
 
 
-def run_prompt(client: Anthropic, prompt: str, system: str | None) -> str:
+def run_prompt(client: "Anthropic", prompt: str, system: str | None) -> str:
     response = client.messages.create(
         model="claude-opus-4-7",
         max_tokens=1500,
@@ -83,14 +85,29 @@ def run_prompt(client: Anthropic, prompt: str, system: str | None) -> str:
 
 
 def main() -> None:
-    client = Anthropic(api_key=get_api_key())
+    parser = argparse.ArgumentParser(description="Code smell capture eval")
+    parser.add_argument(
+        "--from-dir",
+        type=Path,
+        default=None,
+        help="Read saved responses from <dir>/default/ and <dir>/nonna/ instead of calling API",
+    )
+    args = parser.parse_args()
+
     repo_root = Path(__file__).parent.parent
     prompts_path = repo_root / "evals" / "benchmarks" / "prompts.jsonl"
     skill_path = repo_root / "SKILL.md"
     mode_path = repo_root / "modes" / "full.md"
 
     prompts = load_prompts(prompts_path)
-    nonna_system = skill_path.read_text() + "\n\n" + mode_path.read_text()
+
+    if args.from_dir:
+        client = None
+        nonna_system = None
+    else:
+        from anthropic import Anthropic
+        client = Anthropic(api_key=get_api_key())
+        nonna_system = skill_path.read_text() + "\n\n" + mode_path.read_text()
 
     total_keywords = 0
     default_caught = 0
@@ -105,8 +122,17 @@ def main() -> None:
             print(f"  [{i}/{total}] {p['id']}: SKIP (no extractable keywords)", file=sys.stderr)
             continue
         try:
-            default_resp = run_prompt(client, p["prompt"], system=None)
-            nonna_resp = run_prompt(client, p["prompt"], system=nonna_system)
+            if args.from_dir:
+                d_path = args.from_dir / "default" / f"{p['id']}.txt"
+                n_path = args.from_dir / "nonna" / f"{p['id']}.txt"
+                if not d_path.exists() or not n_path.exists():
+                    print(f"  [{i}/{total}] {p['id']}: SKIP (missing file)", file=sys.stderr)
+                    continue
+                default_resp = d_path.read_text()
+                nonna_resp = n_path.read_text()
+            else:
+                default_resp = run_prompt(client, p["prompt"], system=None)
+                nonna_resp = run_prompt(client, p["prompt"], system=nonna_system)
         except Exception as e:
             print(f"  [{i}/{total}] {p['id']}: ERROR {e}", file=sys.stderr)
             continue
