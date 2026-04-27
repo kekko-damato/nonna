@@ -12,6 +12,7 @@ venv/
 
 # Eval outputs
 evals/results/
+evals/manual-results/
 evals/cache/
 *.eval.json
 
