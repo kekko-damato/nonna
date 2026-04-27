@@ -5,7 +5,9 @@
 
 A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares about long-term code health.
 
-<!-- DEMO_GIF: replace placeholder with ./assets/demo.gif once recorded (Task 32) -->
+<div align="center">
+  <img src="./assets/cover.png" alt="Nonna — Italian grandma reviewing your code" width="900" />
+</div>
 
 > **Status:** v0.1.0 — first public release. Star to follow along.
 
@@ -63,6 +65,10 @@ The installer:
 Restart Claude Code. Nonna will be active by default.
 
 To uninstall: `./uninstall.sh`. To install via the official Claude Code marketplace once submitted: `claude plugin install kekko-damato/nonna`.
+
+## Demo
+
+> Demo video shipping in v0.2. Meanwhile, see [`examples/before-after.md`](./examples/before-after.md) for hand-picked side-by-side responses (default Claude vs Nonna) on the same prompts.
 
 ## What Nonna does
 
