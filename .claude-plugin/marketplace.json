@@ -11,8 +11,8 @@
     {
       "name": "nonna",
       "source": {
-        "source": "github",
-        "repo": "kekko-damato/nonna"
+        "source": "url",
+        "url": "https://github.com/kekko-damato/nonna.git"
       },
       "description": "Italian grandma who tells you the truth because she loves you. Kills sycophancy, pushes back on bad ideas, cares about long-term code health.",
       "author": {
