@@ -14,6 +14,10 @@ from typing import Any
 import time
 
 TODO_MARKERS = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b", re.IGNORECASE)
+BAD_COMMIT_PATTERNS = re.compile(
+    r"^(fix|wip|stuff|update|changes|test|asd|temp|\.|tmp|broken|blah|misc)$",
+    re.IGNORECASE,
+)
 FAT_THRESHOLD = 500
 OBESE_THRESHOLD = 1000
 ORPHAN_LOG_PATTERNS = re.compile(
@@ -42,6 +46,23 @@ def iter_source_files(root: Path):
             continue
         if path.suffix.lower() in SCAN_EXTENSIONS:
             yield path
+
+
+def is_git_repo(root: Path) -> bool:
+    """True if root contains a `.git` dir or is inside a git work tree."""
+    if (root / ".git").exists():
+        return True
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        return result.returncode == 0 and result.stdout.strip() == "true"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
 
 
 def scan_todos(root: Path) -> dict[str, Any]:
@@ -126,11 +147,61 @@ def scan_stale_deps(root: Path) -> dict[str, Any]:
 
 
 def scan_zombie_branches(root: Path) -> int:
-    return 0  # placeholder
+    """Count local branches with no commits in last 30 days, not merged to main."""
+    if not is_git_repo(root):
+        return 0
+    try:
+        result = subprocess.run(
+            ["git", "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/heads/"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            return 0
+        now = time.time()
+        thirty_days_ago = now - (30 * 86400)
+        count = 0
+        for line in result.stdout.strip().splitlines():
+            if not line:
+                continue
+            parts = line.rsplit(" ", 1)
+            if len(parts) != 2:
+                continue
+            branch, ts = parts
+            try:
+                if float(ts) < thirty_days_ago and branch not in ("main", "master"):
+                    count += 1
+            except ValueError:
+                continue
+        return count
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return 0
 
 
 def scan_bad_commits(root: Path) -> int:
-    return 0  # placeholder
+    """Count commits in last 30 days with bad messages."""
+    if not is_git_repo(root):
+        return 0
+    try:
+        result = subprocess.run(
+            ["git", "log", "--since=30.days", "--pretty=format:%s"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            return 0
+        count = 0
+        for msg in result.stdout.splitlines():
+            msg = msg.strip()
+            if BAD_COMMIT_PATTERNS.match(msg) or len(msg) < 10:
+                count += 1
+        return count
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return 0
 
 
 def scan_test_ratio(root: Path) -> float:
@@ -139,6 +210,16 @@ def scan_test_ratio(root: Path) -> float:
 
 def scan_repo(root: Path) -> dict[str, Any]:
     """Scan repo at root, return structured findings."""
+    warnings = []
+    if not is_git_repo(root):
+        warnings.append("no git repo detected — skipped branches/commits checks")
+
+    # detect package managers for stale deps
+    has_npm = (root / "package.json").exists()
+    has_pip = (root / "requirements.txt").exists() or (root / "pyproject.toml").exists()
+    if not has_npm and not has_pip:
+        warnings.append("no package.json or requirements.txt — skipped stale deps check")
+
     return {
         "todos": scan_todos(root),
         "fat_files": scan_fat_files(root),
@@ -148,7 +229,7 @@ def scan_repo(root: Path) -> dict[str, Any]:
         "zombie_branches": scan_zombie_branches(root),
         "bad_commits_30d": scan_bad_commits(root),
         "test_ratio": scan_test_ratio(root),
-        "warnings": [],
+        "warnings": warnings,
     }
 
 

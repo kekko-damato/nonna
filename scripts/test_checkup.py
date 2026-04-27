@@ -87,3 +87,31 @@ def test_skips_logs_in_test_files(tmp_path):
     test.write_text("console.log('test debug')\n")
     result = run_checkup(str(tmp_path))
     assert result["orphan_logs"] == 0
+
+
+def init_git_repo(path: Path) -> None:
+    subprocess.run(["git", "init", "-b", "main"], cwd=path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@test.com"], cwd=path, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=path, check=True)
+
+
+def test_no_git_warns_gracefully(tmp_path):
+    result = run_checkup(str(tmp_path))
+    assert result["zombie_branches"] == 0
+    assert result["bad_commits_30d"] == 0
+    assert any("git" in w.lower() for w in result["warnings"])
+
+
+def test_counts_bad_commits(tmp_path):
+    init_git_repo(tmp_path)
+    (tmp_path / "f.py").write_text("x = 1\n")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "fix"], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "f.py").write_text("x = 2\n")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "wip"], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "f.py").write_text("x = 3\n")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "feat: add proper feature"], cwd=tmp_path, check=True, capture_output=True)
+    result = run_checkup(str(tmp_path))
+    assert result["bad_commits_30d"] == 2
