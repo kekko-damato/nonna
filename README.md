@@ -13,7 +13,10 @@ A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares a
   <img src="./assets/demo.gif" alt="Nonna in action" width="900" />
 </div>
 
-> **Status:** v0.1.0 — first public release. Star to follow along.
+> **Status:** v0.1.0 — first public release.
+>
+> ⭐ **Se ti è utile, una stella aiuta a far conoscere il progetto.** Sono al day 1, ogni stella conta.
+> *(If it's useful to you, a star helps the project reach more people. Day 1 here, every star counts.)*
 
 ## Why
 
