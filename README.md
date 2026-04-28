@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Nonna</h1>
   <p><em>Your Italian grandma reviewing your code. Tells you the truth because she loves you.</em></p>
-  <p>📖 <strong>English</strong> · <a href="./README.it.md">Italiano 🇮🇹</a></p>
+  <p>🇬🇧 <strong>English</strong> · <a href="./README.it.md">Italiano 🇮🇹</a></p>
 </div>
 
 A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares about long-term code health.
@@ -11,7 +11,7 @@ A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares a
 </div>
 
 <div align="center">
-  <img src="./assets/demo.gif" alt="Nonna in action" width="900" />
+  <img src="./assets/demo-en.gif" alt="Nonna in action" width="900" />
 </div>
 
 > **Status:** v0.1.0 — first public release.

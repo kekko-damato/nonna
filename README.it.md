@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Nonna</h1>
   <p><em>La tua nonna italiana che ti rivede il codice. Ti dice la verità perché ti vuole bene.</em></p>
-  <p>📖 <a href="./README.md">English</a> · <strong>Italiano 🇮🇹</strong></p>
+  <p><a href="./README.md">🇬🇧 English</a> · <strong>Italiano 🇮🇹</strong></p>
 </div>
 
 Una skill per Claude Code che taglia il leccaculismo, contesta le idee sbagliate, e si preoccupa della salute del tuo codice nel lungo periodo.
@@ -11,7 +11,7 @@ Una skill per Claude Code che taglia il leccaculismo, contesta le idee sbagliate
 </div>
 
 <div align="center">
-  <img src="./assets/demo.gif" alt="Nonna in azione" width="900" />
+  <img src="./assets/demo-it.gif" alt="Nonna in azione" width="900" />
 </div>
 
 > **Status:** v0.1.0 — prima release pubblica.
