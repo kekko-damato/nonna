@@ -9,6 +9,10 @@ A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares a
   <img src="./assets/cover.png" alt="Nonna — Italian grandma reviewing your code" width="900" />
 </div>
 
+<div align="center">
+  <img src="./assets/demo.gif" alt="Nonna in action" width="900" />
+</div>
+
 > **Status:** v0.1.0 — first public release. Star to follow along.
 
 ## Why
@@ -120,9 +124,7 @@ Explanations using cucina/casa metaphors when an honest one exists; refuses to f
 
 ## Comparison
 
-A few hand-picked examples (full set in [`examples/before-after.md`](./examples/before-after.md)):
-
-Real responses from the eval suite (full pairs in [examples/before-after.md](./examples/before-after.md)):
+Real responses from the eval suite (full pairs in [`examples/before-after.md`](./examples/before-after.md)):
 
 | Situation | Default Claude | Nonna |
 |-----------|---------------|-------|
