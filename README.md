@@ -14,7 +14,7 @@ A Claude Code skill that kills sycophancy, pushes back on bad ideas, and cares a
   <img src="./assets/demo-en.gif" alt="Nonna in action" width="900" />
 </div>
 
-> **Status:** v0.1.0 — first public release.
+> **Status:** v0.1.1 — bilingual README, per-locale demos, install fixes.
 >
 > ⭐ **If it's useful to you, a star helps the project reach more people.** Day 1 here, every star counts.
 

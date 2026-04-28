@@ -14,7 +14,7 @@ Una skill per Claude Code che taglia il leccaculismo, contesta le idee sbagliate
   <img src="./assets/demo-it.gif" alt="Nonna in azione" width="900" />
 </div>
 
-> **Status:** v0.1.0 — prima release pubblica.
+> **Status:** v0.1.1 — README bilingue, demo per lingua, fix installazione.
 >
 > ⭐ **Se ti è utile, una stella aiuta a far conoscere il progetto.** Sono al day 1, ogni stella conta.
 
